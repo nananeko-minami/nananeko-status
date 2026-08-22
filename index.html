@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>稼働状況 | 株式会社ななねこ</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="株式会社ななねこの各サービスの稼働状況・メンテナンス予定をお知らせしています。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🐱</text></svg>">
+
+<!--
+  ============================================================================
+   このページの編集方法
+  ============================================================================
+   下の「▼▼▼ ここから編集 ▼▼▼」〜「▲▲▲ ここまで編集 ▲▲▲」の中だけを直します。
+   それ以外の場所（CSS や JavaScript）は触らなくて構いません。
+
+   スマートフォンからでも GitHub の web 画面で編集 → Commit すれば、
+   1分ほどで https://status.nananeko.co.jp/ に反映されます。
+
+   ★ 予告 → 実施中 → 終了 の切り替えは、開始・終了の時刻から【自動で】決まります。
+     予定どおり進んでいる限り、当日の更新作業はありません。
+     人が手を入れるのは「延長したとき」と「障害が起きたとき」だけです。
+
+   ⚠️ このページは意図的に「他のサーバーに一切問い合わせない」作りにしています。
+      本体サーバーが落ちている時に読まれるページなので、
+      外部の CSS・JavaScript・画像を読み込む記述を足さないでください。
+  ============================================================================
+-->
+<script>
+/* ▼▼▼ ここから編集 ▼▼▼ */
+
+/* お知らせの本文を最後に書き換えた日時。文章を直したときだけ更新すれば十分です。 */
+const LAST_UPDATED = "2026-08-23 10:00";
+
+/* サービスの一覧。ここに並べた順に表示されます。 */
+const SERVICES = ["DeDn", "YOYAKUTO", "コーポレートサイト"];
+
+/* お問い合わせ先 */
+const CONTACT_EMAIL = "info@nananeko.co.jp";
+
+/*
+  ────────────────────────────────────────────────────────────────
+   お知らせの一覧。新しいものを上に足します。
+   終わったお知らせは1か月ほど残してから削除してください。
+  ────────────────────────────────────────────────────────────────
+
+   kind        "メンテナンス" または "障害"
+   services    対象サービス。SERVICES に書いた名前と揃えます
+   startAt     開始日時 "YYYY-MM-DD HH:MM"（日本時間）
+   endAt       終了予定日時（告知する最大幅。実際はこれより短く終わるのが通常）
+   recoveredAt 実際に終わった日時。★終わったらここに時刻を入れる★（それまでは null）
+   impact      お客さまから見て何ができなくなるのか。専門用語を使わずに書く
+   body        補足説明
+   updates     経過の記録。新しいものを下に足す
+
+   ★ 表示は自動で切り替わります:
+       開始前            → 「予告」
+       開始〜終了予定     → 「実施中」
+       終了予定を過ぎた   → 「終了予定時刻を過ぎています」
+       recoveredAt 記入後 → 「復旧」
+
+   ★ 延長したときは recoveredAt を空のままにし、updates に理由と新しい見込みを追記します。
+     何も更新できなかった場合でも、ページが「復旧しました」と誤って表示することはありません。
+*/
+const NOTICES = [
+  {
+    kind: "メンテナンス",
+    title: "定期メンテナンスのお知らせ",
+    services: ["DeDn"],
+    startAt: "2026-09-14 01:00",
+    endAt:   "2026-09-14 06:00",
+    recoveredAt: null,
+    impact: "この時間帯は DeDn にログインできません。作業中のデータが失われることはありません。",
+    body: "システムの定期的な保守作業を行います。作業は通常15〜30分程度で終わりますが、余裕を持って上記の時間帯をお知らせしています。作業が終わり次第、このページを更新します。",
+    updates: [
+      // 例: { at: "2026-09-14 03:40", text: "作業に時間がかかっているため、終了予定を 7:00 に延長します。" },
+    ],
+  },
+];
+
+/* ▲▲▲ ここまで編集 ▲▲▲ */
+</script>
+
+<style>
+:root {
+  --bg: #ffffff; --bg-soft: #f6f7f8; --card: #ffffff; --border: #e3e6e8;
+  --text: #1a1d1f; --text-soft: #5b6367;
+  --ok: #1a7f4b;  --ok-bg: #e8f5ee;
+  --warn: #9a6200; --warn-bg: #fdf3e0;
+  --bad: #b3261e;  --bad-bg: #fdecea;
+  --accent: #1a7f4b;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14171a; --bg-soft: #1b1f23; --card: #1b1f23; --border: #2e343a;
+    --text: #eceff1; --text-soft: #a3adb4;
+    --ok: #5ed99b;  --ok-bg: #16311f;
+    --warn: #ffc65c; --warn-bg: #33280f;
+    --bad: #ff8a80;  --bad-bg: #3a1a18;
+    --accent: #5ed99b;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP",
+               "Yu Gothic", Meiryo, sans-serif;
+  font-size: 17px; line-height: 1.85;
+}
+.wrap { max-width: 720px; margin: 0 auto; padding: 24px 20px 72px; }
+header { padding: 28px 0 8px; border-bottom: 1px solid var(--border); }
+.company { font-size: 14px; color: var(--text-soft); margin: 0 0 4px; }
+h1 { font-size: 27px; line-height: 1.4; margin: 0 0 16px; letter-spacing: .01em; }
+
+.overall { display: flex; align-items: center; gap: 12px; padding: 18px 20px;
+           border-radius: 12px; margin: 24px 0 8px; border: 1px solid var(--border); }
+.overall .dot { width: 13px; height: 13px; border-radius: 50%; flex: 0 0 auto; }
+.overall .msg { font-size: 19px; font-weight: 700; }
+.overall.ok   { background: var(--ok-bg); }
+.overall.ok   .dot { background: var(--ok); } .overall.ok   .msg { color: var(--ok); }
+.overall.warn { background: var(--warn-bg); }
+.overall.warn .dot { background: var(--warn); } .overall.warn .msg { color: var(--warn); }
+.overall.bad  { background: var(--bad-bg); }
+.overall.bad  .dot { background: var(--bad); } .overall.bad  .msg { color: var(--bad); }
+
+.meta { font-size: 14px; color: var(--text-soft); margin: 0 0 36px; }
+.meta span + span::before { content: " / "; }
+
+h2 { font-size: 20px; margin: 40px 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+
+.notice { border: 1px solid var(--border); border-left-width: 5px; border-radius: 10px;
+          background: var(--card); padding: 20px; margin-bottom: 18px; }
+.notice.s-yokoku  { border-left-color: var(--text-soft); }
+.notice.s-active  { border-left-color: var(--warn); }
+.notice.s-overrun { border-left-color: var(--bad); }
+.notice.s-done    { border-left-color: var(--ok); }
+.notice.s-fault   { border-left-color: var(--bad); }
+
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.tag { font-size: 13px; font-weight: 700; padding: 3px 11px; border-radius: 999px;
+       border: 1px solid var(--border); color: var(--text-soft); }
+.tag.t-yokoku  { background: var(--bg-soft); }
+.tag.t-active  { background: var(--warn-bg); color: var(--warn); border-color: transparent; }
+.tag.t-overrun { background: var(--bad-bg);  color: var(--bad);  border-color: transparent; }
+.tag.t-done    { background: var(--ok-bg);   color: var(--ok);   border-color: transparent; }
+.tag.t-fault   { background: var(--bad-bg);  color: var(--bad);  border-color: transparent; }
+
+.notice h3 { font-size: 19px; margin: 0 0 14px; line-height: 1.5; }
+.row { display: flex; gap: 12px; margin-bottom: 10px; font-size: 16px; }
+.row .k { flex: 0 0 5.5em; color: var(--text-soft); font-size: 14px; padding-top: 3px; }
+.row .v { flex: 1 1 auto; }
+.impact { font-weight: 700; }
+.notice p.body { margin: 14px 0 0; }
+
+.updates { margin: 18px 0 0; padding: 14px 16px; background: var(--bg-soft);
+           border-radius: 8px; list-style: none; }
+.updates .lbl { font-size: 13px; color: var(--text-soft); font-weight: 700; margin-bottom: 8px;
+                list-style: none; padding: 0; text-indent: 0; }
+.updates li { font-size: 15px; margin-bottom: 8px; padding-left: 1em; text-indent: -1em; }
+.updates li:last-child { margin-bottom: 0; }
+.updates time { color: var(--text-soft); font-variant-numeric: tabular-nums; }
+
+.empty { color: var(--text-soft); padding: 22px 20px; background: var(--bg-soft);
+         border-radius: 10px; margin: 0; }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 13px 8px; border-bottom: 1px solid var(--border); font-size: 16px; }
+th { font-size: 14px; color: var(--text-soft); font-weight: 700; }
+td .state { font-weight: 700; }
+td .state.ok { color: var(--ok); } td .state.warn { color: var(--warn); } td .state.bad { color: var(--bad); }
+td .note { display: block; font-size: 14px; color: var(--text-soft); }
+
+.info { background: var(--bg-soft); border-radius: 10px; padding: 20px; }
+.info p { margin: 0 0 10px; font-size: 16px; } .info p:last-child { margin-bottom: 0; }
+a { color: var(--accent); }
+footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--border);
+         font-size: 14px; color: var(--text-soft); }
+footer a { color: var(--text-soft); }
+
+@media (max-width: 480px) {
+  body { font-size: 16px; } h1 { font-size: 23px; }
+  .wrap { padding: 16px 16px 56px; }
+  .row { flex-direction: column; gap: 2px; }
+  .row .k { flex: none; padding-top: 0; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="company">株式会社ななねこ</p>
+    <h1>サービス稼働状況</h1>
+  </header>
+
+  <div id="overall" class="overall ok">
+    <span class="dot"></span>
+    <span class="msg">すべて正常に稼働しています</span>
+  </div>
+  <p class="meta"><span id="now"></span><span id="updated"></span></p>
+
+  <h2>お知らせ</h2>
+  <div id="notices"></div>
+
+  <h2>サービス別の状況</h2>
+  <table>
+    <thead><tr><th>サービス</th><th>状況</th></tr></thead>
+    <tbody id="services"></tbody>
+  </table>
+
+  <h2>定期メンテナンスについて</h2>
+  <div class="info">
+    <p>毎月 <strong>第2・第4 日曜日の夜（日付が変わって月曜日の 1:00 〜 6:00）</strong>を、
+       定期メンテナンスの枠としています。</p>
+    <p>この枠すべてを使うわけではありません。実際の停止時間は通常15〜30分程度です。
+       停止を伴う作業を行う場合は、<strong>7日前までに</strong>ご登録のメールアドレスへご連絡し、
+       このページにも掲載します。</p>
+    <p>枠を設けていない日に停止することはありません（緊急の対応が必要な場合を除きます）。</p>
+  </div>
+
+  <h2>お困りのとき</h2>
+  <div class="info">
+    <p>このページに該当するお知らせが無いのにサービスをご利用いただけない場合は、
+       お手数ですがご連絡ください。</p>
+    <p><a id="contact" href="#">お問い合わせ</a></p>
+  </div>
+
+  <footer>
+    <p>© <span id="year"></span> 株式会社ななねこ &nbsp;/&nbsp;
+       <a href="https://nananeko.co.jp/">コーポレートサイト</a></p>
+    <p>このページは本体サービスとは別のサーバーで公開しているため、
+       メンテナンス中・障害発生中でもご覧いただけます。</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var esc = function (s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  };
+
+  // 日本時間の "YYYY-MM-DD HH:MM" を Date に変換する。
+  // 閲覧者がどの時間帯にいても同じ瞬間を指すよう、+09:00 を明示する。
+  var jst = function (s) {
+    if (!s) return null;
+    var d = new Date(String(s).trim().replace(' ', 'T') + ':00+09:00');
+    return isNaN(d.getTime()) ? null : d;
+  };
+  var fmtDate = new Intl.DateTimeFormat('ja-JP', {
+    timeZone: 'Asia/Tokyo', year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' });
+  var fmtTime = new Intl.DateTimeFormat('ja-JP', {
+    timeZone: 'Asia/Tokyo', hour: 'numeric', minute: '2-digit', hour12: false });
+  var fmtFull = new Intl.DateTimeFormat('ja-JP', {
+    timeZone: 'Asia/Tokyo', month: 'numeric', day: 'numeric',
+    hour: 'numeric', minute: '2-digit', hour12: false });
+  var sameDay = function (a, b) { return fmtDate.format(a) === fmtDate.format(b); };
+
+  var now = new Date();
+
+  // --- 各お知らせの状態を、時刻から決める --------------------------------
+  // 「終了予定を過ぎたが復旧の記録が無い」場合に『復旧』と表示しないことが要点。
+  // 誰も更新できなかったときに、ページが嘘をつかないようにしている。
+  var STATE = {
+    yokoku:  { cls: 'yokoku',  label: '予告' },
+    active:  { cls: 'active',  label: '実施中' },
+    overrun: { cls: 'overrun', label: '終了予定時刻を過ぎています' },
+    done:    { cls: 'done',    label: '復旧' },
+    fault:   { cls: 'fault',   label: '障害' }
+  };
+  var stateOf = function (n) {
+    var rec = jst(n.recoveredAt);
+    if (rec && now >= rec) return 'done';
+    if (n.kind === '障害') return 'fault';
+    var s = jst(n.startAt), e = jst(n.endAt);
+    if (!s || !e) return 'yokoku';
+    if (now < s) return 'yokoku';
+    if (now < e) return 'active';
+    return 'overrun';
+  };
+
+  var items = NOTICES.map(function (n) { return { n: n, st: stateOf(n) }; });
+
+  // --- サービス別の状況（お知らせから導出。二重管理をしない） --------------
+  var svcState = {};
+  SERVICES.forEach(function (name) { svcState[name] = { state: '正常', note: '' }; });
+  items.forEach(function (it) {
+    if (it.st === 'yokoku' || it.st === 'done') return;
+    (it.n.services || []).forEach(function (name) {
+      if (!svcState[name]) return;
+      if (it.st === 'fault') {
+        svcState[name] = { state: '障害発生中', note: it.n.title };
+      } else if (svcState[name].state !== '障害発生中') {
+        svcState[name] = {
+          state: 'メンテナンス中',
+          note: it.st === 'overrun' ? '終了予定時刻を過ぎています' : ''
+        };
+      }
+    });
+  });
+
+  var stateClass = { '正常': 'ok', 'メンテナンス中': 'warn', '障害発生中': 'bad' };
+  document.getElementById('services').innerHTML = SERVICES.map(function (name) {
+    var s = svcState[name];
+    return '<tr><td>' + esc(name) + '</td><td>' +
+           '<span class="state ' + stateClass[s.state] + '">' + esc(s.state) + '</span>' +
+           (s.note ? '<span class="note">' + esc(s.note) + '</span>' : '') +
+           '</td></tr>';
+  }).join('');
+
+  // --- 総合ステータス -----------------------------------------------------
+  var vals = SERVICES.map(function (n) { return svcState[n].state; });
+  var box = document.getElementById('overall'), msg = box.querySelector('.msg');
+  if (vals.indexOf('障害発生中') >= 0) {
+    box.className = 'overall bad';  msg.textContent = '一部のサービスで障害が発生しています';
+  } else if (vals.indexOf('メンテナンス中') >= 0) {
+    box.className = 'overall warn'; msg.textContent = 'メンテナンスを実施しています';
+  } else {
+    box.className = 'overall ok';   msg.textContent = 'すべて正常に稼働しています';
+  }
+
+  document.getElementById('now').textContent =
+    '表示時点: ' + fmtFull.format(now) + '（日本時間）';
+  document.getElementById('updated').textContent = 'お知らせ最終更新: ' + LAST_UPDATED;
+  document.getElementById('year').textContent =
+    new Intl.DateTimeFormat('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric' })
+      .format(now).replace(/[^0-9]/g, '');
+  var c = document.getElementById('contact');
+  c.href = 'mailto:' + CONTACT_EMAIL;
+  c.textContent = CONTACT_EMAIL;
+
+  // --- お知らせ -----------------------------------------------------------
+  var host = document.getElementById('notices');
+  if (!items.length) {
+    host.innerHTML = '<p class="empty">現在、予定されているメンテナンスや、発生している障害はありません。</p>';
+    return;
+  }
+  host.innerHTML = items.map(function (it) {
+    var n = it.n, st = STATE[it.st];
+    var s = jst(n.startAt), e = jst(n.endAt), rec = jst(n.recoveredAt);
+
+    var when = '';
+    if (s && e) {
+      when = fmtDate.format(s) + ' ' + fmtTime.format(s) + ' 〜 ' +
+             (sameDay(s, e) ? '' : fmtDate.format(e) + ' ') + fmtTime.format(e);
+    }
+
+    var tags = '<span class="tag t-' + st.cls + '">' + esc(st.label) + '</span>' +
+      (n.services || []).map(function (x) { return '<span class="tag">' + esc(x) + '</span>'; }).join('');
+
+    var rows = '';
+    if (when)   rows += '<div class="row"><div class="k">日時</div><div class="v">' + esc(when) + '</div></div>';
+    if (rec)    rows += '<div class="row"><div class="k">復旧</div><div class="v">' +
+                        esc(fmtDate.format(rec) + ' ' + fmtTime.format(rec)) + '</div></div>';
+    if (n.impact) rows += '<div class="row"><div class="k">影響</div><div class="v impact">' + esc(n.impact) + '</div></div>';
+
+    // 終了予定を過ぎている場合、経過の追記がまだ無くても状況を必ず伝える
+    var extra = '';
+    if (it.st === 'overrun') {
+      extra = '<p class="body"><strong>作業が予定の時刻を過ぎています。</strong>' +
+              '復旧までいましばらくお待ちください。状況が分かり次第このページを更新します。</p>';
+    }
+
+    var ups = '';
+    if (n.updates && n.updates.length) {
+      ups = '<ul class="updates"><li class="lbl">経過</li>' +
+        n.updates.map(function (u) {
+          var t = jst(u.at);
+          return '<li><time>' + esc(t ? fmtFull.format(t) : u.at) + '</time> — ' + esc(u.text) + '</li>';
+        }).join('') + '</ul>';
+    }
+
+    return '<article class="notice s-' + st.cls + '">' +
+             '<div class="tags">' + tags + '</div>' +
+             '<h3>' + esc(n.title) + '</h3>' + rows +
+             (n.body ? '<p class="body">' + esc(n.body) + '</p>' : '') +
+             extra + ups +
+           '</article>';
+  }).join('');
+})();
+</script>
+</body>
+</html>
