@@ -31,13 +31,31 @@
 /* ▼▼▼ ここから編集 ▼▼▼ */
 
 /* お知らせの本文を最後に書き換えた日時。文章を直したときだけ更新すれば十分です。 */
-const LAST_UPDATED = "2026-08-23 10:00";
+const LAST_UPDATED = "2026-08-23 12:00";
 
-/* サービスの一覧。ここに並べた順に表示されます。 */
-const SERVICES = ["DeDn", "YOYAKUTO", "コーポレートサイト"];
+/*
+  サービスの一覧。ここに並べた順に表示されます。
+
+  ★ 「DeDn」ではなく「DeDn（管理画面）」と「DeDn で公開したホームページ」に分けています。
+    通常メンテでは管理画面だけが止まり、公開したホームページは動き続けるためです。
+    まとめて1行にすると「自分のホームページが落ちた」と誤解され、実害が出ます。
+*/
+const SERVICES = [
+  "DeDn（管理画面）",
+  "DeDn で公開したホームページ",
+  "YOYAKUTO（店舗管理画面）",
+  "YOYAKUTO の予約ページ",
+  "コーポレートサイト",
+];
 
 /* お問い合わせ先 */
 const CONTACT_EMAIL = "info@nananeko.co.jp";
+
+/*
+  何日前から「お知らせ」として大きく出すか。
+  これより先の予定は、下の「今後の予定」に日付だけ並びます。
+*/
+const NOTICE_LEAD_DAYS = 7;
 
 /*
   ────────────────────────────────────────────────────────────────
@@ -46,11 +64,12 @@ const CONTACT_EMAIL = "info@nananeko.co.jp";
   ────────────────────────────────────────────────────────────────
 
    kind        "メンテナンス" または "障害"
-   services    対象サービス。SERVICES に書いた名前と揃えます
+   services    対象サービス。SERVICES に書いた名前と正確に揃えます
    startAt     開始日時 "YYYY-MM-DD HH:MM"（日本時間）
    endAt       終了予定日時（告知する最大幅。実際はこれより短く終わるのが通常）
    recoveredAt 実際に終わった日時。★終わったらここに時刻を入れる★（それまでは null）
-   impact      お客さまから見て何ができなくなるのか。専門用語を使わずに書く
+   impact      お客さまから見て何ができなくなるのか。専門用語を使わずに書く。
+               サービスごとに違う場合は { "サービス名": "文", ... } と書けます
    body        補足説明
    updates     経過の記録。新しいものを下に足す
 
@@ -63,19 +82,61 @@ const CONTACT_EMAIL = "info@nananeko.co.jp";
    ★ 延長したときは recoveredAt を空のままにし、updates に理由と新しい見込みを追記します。
      何も更新できなかった場合でも、ページが「復旧しました」と誤って表示することはありません。
 */
+
+/* 通常メンテで止まるもの・止まらないものの定型文。4件で使い回します。 */
+const 通常メンテの影響 = {
+  "DeDn（管理画面）":
+    "DeDn の管理画面にログインできません。お客さまが公開しているホームページは、通常どおり表示され続けます。",
+  "YOYAKUTO（店舗管理画面）":
+    "店舗管理画面にログインできません。お客さまからの予約の受付は、通常どおり継続します。",
+};
+const 通常メンテの本文 =
+  "システムの定期的な保守作業を行います。作業は通常15〜30分程度で終わりますが、余裕を持って上記の時間帯をお知らせしています。作業中もデータが失われることはありません。";
+
 const NOTICES = [
   {
     kind: "メンテナンス",
     title: "定期メンテナンスのお知らせ",
-    services: ["DeDn"],
+    services: ["DeDn（管理画面）", "YOYAKUTO（店舗管理画面）"],
     startAt: "2026-09-14 01:00",
     endAt:   "2026-09-14 06:00",
     recoveredAt: null,
-    impact: "この時間帯は DeDn にログインできません。作業中のデータが失われることはありません。",
-    body: "システムの定期的な保守作業を行います。作業は通常15〜30分程度で終わりますが、余裕を持って上記の時間帯をお知らせしています。作業が終わり次第、このページを更新します。",
-    updates: [
-      // 例: { at: "2026-09-14 03:40", text: "作業に時間がかかっているため、終了予定を 7:00 に延長します。" },
-    ],
+    impact: 通常メンテの影響,
+    body: 通常メンテの本文,
+    updates: [],
+  },
+  {
+    kind: "メンテナンス",
+    title: "定期メンテナンスのお知らせ",
+    services: ["DeDn（管理画面）", "YOYAKUTO（店舗管理画面）"],
+    startAt: "2026-09-28 01:00",
+    endAt:   "2026-09-28 06:00",
+    recoveredAt: null,
+    impact: 通常メンテの影響,
+    body: 通常メンテの本文,
+    updates: [],
+  },
+  {
+    kind: "メンテナンス",
+    title: "定期メンテナンスのお知らせ",
+    services: ["DeDn（管理画面）", "YOYAKUTO（店舗管理画面）"],
+    startAt: "2026-10-12 01:00",
+    endAt:   "2026-10-12 06:00",
+    recoveredAt: null,
+    impact: 通常メンテの影響,
+    body: 通常メンテの本文,
+    updates: [],
+  },
+  {
+    kind: "メンテナンス",
+    title: "定期メンテナンスのお知らせ",
+    services: ["DeDn（管理画面）", "YOYAKUTO（店舗管理画面）"],
+    startAt: "2026-10-26 01:00",
+    endAt:   "2026-10-26 06:00",
+    recoveredAt: null,
+    impact: 通常メンテの影響,
+    body: 通常メンテの本文,
+    updates: [],
   },
 ];
 
@@ -173,6 +234,16 @@ td .state.ok { color: var(--ok); } td .state.warn { color: var(--warn); } td .st
 td .note { display: block; font-size: 14px; color: var(--text-soft); }
 
 .info { background: var(--bg-soft); border-radius: 10px; padding: 20px; }
+.upcoming { margin: 16px 0 0; padding: 14px 16px; background: var(--card);
+            border: 1px solid var(--border); border-radius: 8px; }
+.upcoming .lbl { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+.upcoming ul { margin: 0; padding-left: 1.2em; }
+.upcoming li { font-size: 15px; margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+.upcoming li:last-child { margin-bottom: 0; }
+.impact-list { margin: 0; padding: 0; list-style: none; }
+.impact-list li { margin-bottom: 8px; }
+.impact-list li:last-child { margin-bottom: 0; }
+.impact-list .svc { display: block; font-size: 14px; color: var(--text-soft); font-weight: 700; }
 .info p { margin: 0 0 10px; font-size: 16px; } .info p:last-child { margin-bottom: 0; }
 a { color: var(--accent); }
 footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--border);
@@ -213,10 +284,14 @@ footer a { color: var(--text-soft); }
   <div class="info">
     <p>毎月 <strong>第2・第4 日曜日の夜（日付が変わって月曜日の 1:00 〜 6:00）</strong>を、
        定期メンテナンスの枠としています。</p>
-    <p>この枠すべてを使うわけではありません。実際の停止時間は通常15〜30分程度です。
-       停止を伴う作業を行う場合は、<strong>7日前までに</strong>ご登録のメールアドレスへご連絡し、
-       このページにも掲載します。</p>
+    <p>この枠すべてを使うわけではありません。実際の停止時間は通常15〜30分程度で、
+       止まるのは<strong>管理画面へのログインだけ</strong>です。
+       お客さまが公開しているホームページと、予約の受付は動き続けます。</p>
+    <p>定期メンテナンスは<strong>このページでお知らせします</strong>（メールはお送りしません）。
+       サーバーの再起動を伴う大きな作業や、作業が予定の時刻を超えた場合は、
+       ご登録のメールアドレスへもご連絡します。</p>
     <p>枠を設けていない日に停止することはありません（緊急の対応が必要な場合を除きます）。</p>
+    <div id="upcoming"></div>
   </div>
 
   <h2>お困りのとき</h2>
@@ -281,21 +356,32 @@ footer a { color: var(--text-soft); }
     return 'overrun';
   };
 
-  var items = NOTICES.map(function (n) { return { n: n, st: stateOf(n) }; });
+  var all = NOTICES.map(function (n) { return { n: n, st: stateOf(n) }; });
+
+  // まだ先の予定は、大きなカードにせず「今後の予定」へ回す。
+  // DeDn 側の運用（7日前告知）に合わせ、それより先はページを占有させない。
+  var LEAD_MS = (typeof NOTICE_LEAD_DAYS === 'number' ? NOTICE_LEAD_DAYS : 7) * 86400000;
+  var far = [], items = [];
+  all.forEach(function (it) {
+    var st = jst(it.n.startAt);
+    if (it.st === 'yokoku' && st && st - now > LEAD_MS) far.push(it);
+    else items.push(it);
+  });
 
   // --- サービス別の状況（お知らせから導出。二重管理をしない） --------------
   var svcState = {};
   SERVICES.forEach(function (name) { svcState[name] = { state: '正常', note: '' }; });
-  items.forEach(function (it) {
+  all.forEach(function (it) {
     if (it.st === 'yokoku' || it.st === 'done') return;
     (it.n.services || []).forEach(function (name) {
       if (!svcState[name]) return;
       if (it.st === 'fault') {
         svcState[name] = { state: '障害発生中', note: it.n.title };
       } else if (svcState[name].state !== '障害発生中') {
+        var per = (it.n.impact && typeof it.n.impact === 'object') ? it.n.impact[name] : '';
         svcState[name] = {
           state: 'メンテナンス中',
-          note: it.st === 'overrun' ? '終了予定時刻を過ぎています' : ''
+          note: it.st === 'overrun' ? '終了予定時刻を過ぎています' : (per || '')
         };
       }
     });
@@ -332,9 +418,24 @@ footer a { color: var(--text-soft); }
   c.textContent = CONTACT_EMAIL;
 
   // --- お知らせ -----------------------------------------------------------
+  // 今後の予定（日付だけの一覧）
+  var upHost = document.getElementById('upcoming');
+  if (upHost && far.length) {
+    upHost.innerHTML = '<div class="upcoming"><div class="lbl">今後の予定</div><ul>' +
+      far.map(function (it) {
+        var st = jst(it.n.startAt), en = jst(it.n.endAt);
+        return '<li>' + esc(fmtDate.format(st) + ' ' + fmtTime.format(st) + '〜' + fmtTime.format(en)) + '</li>';
+      }).join('') + '</ul></div>';
+  }
+
   var host = document.getElementById('notices');
   if (!items.length) {
-    host.innerHTML = '<p class="empty">現在、予定されているメンテナンスや、発生している障害はありません。</p>';
+    // 「予定は無い」と「まだ先の予定しかない」を言い分ける。
+    host.innerHTML = far.length
+      ? '<p class="empty">現在、' + (LEAD_MS / 86400000) +
+        '日以内に予定されている作業や、発生している障害はありません。' +
+        '今後の予定は下の「定期メンテナンスについて」をご覧ください。</p>'
+      : '<p class="empty">現在、予定されているメンテナンスや、発生している障害はありません。</p>';
     return;
   }
   host.innerHTML = items.map(function (it) {
@@ -354,7 +455,20 @@ footer a { color: var(--text-soft); }
     if (when)   rows += '<div class="row"><div class="k">日時</div><div class="v">' + esc(when) + '</div></div>';
     if (rec)    rows += '<div class="row"><div class="k">復旧</div><div class="v">' +
                         esc(fmtDate.format(rec) + ' ' + fmtTime.format(rec)) + '</div></div>';
-    if (n.impact) rows += '<div class="row"><div class="k">影響</div><div class="v impact">' + esc(n.impact) + '</div></div>';
+    if (n.impact) {
+      var impHtml;
+      if (typeof n.impact === 'string') {
+        impHtml = '<span class="impact">' + esc(n.impact) + '</span>';
+      } else {
+        // サービスごとに影響が違う場合。止まるものと止まらないものを取り違えさせない。
+        impHtml = '<ul class="impact-list">' +
+          Object.keys(n.impact).map(function (k) {
+            return '<li><span class="svc">' + esc(k) + '</span>' +
+                   '<span class="impact">' + esc(n.impact[k]) + '</span></li>';
+          }).join('') + '</ul>';
+      }
+      rows += '<div class="row"><div class="k">影響</div><div class="v">' + impHtml + '</div></div>';
+    }
 
     // 終了予定を過ぎている場合、経過の追記がまだ無くても状況を必ず伝える
     var extra = '';
